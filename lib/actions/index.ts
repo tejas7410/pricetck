@@ -1,4 +1,4 @@
-"use server";
+"use server"
 
 import { revalidatePath } from "next/cache";
 import Product from "../models/product.model";
@@ -9,45 +9,44 @@ import { User } from "@/types";
 import { generateEmailBody, sendEmail } from "../nodemailer";
 
 export async function scrapeAndStoreProduct(productUrl: string) {
-  if (!productUrl) return;
-  return;
+  if(!productUrl) return;
 
-  // try {
-  //   connectToDB();
+  try {
+    connectToDB();
 
-  //   const scrapedProduct = await scrapeAmazonProduct(productUrl);
+    const scrapedProduct = await scrapeAmazonProduct(productUrl);
 
-  //   if(!scrapedProduct) return;
+    if(!scrapedProduct) return;
 
-  //   let product = scrapedProduct;
+    let product = scrapedProduct;
 
-  //   const existingProduct = await Product.findOne({ url: scrapedProduct.url });
+    const existingProduct = await Product.findOne({ url: scrapedProduct.url });
 
-  //   if(existingProduct) {
-  //     const updatedPriceHistory: any = [
-  //       ...existingProduct.priceHistory,
-  //       { price: scrapedProduct.currentPrice }
-  //     ]
+    if(existingProduct) {
+      const updatedPriceHistory: any = [
+        ...existingProduct.priceHistory,
+        { price: scrapedProduct.currentPrice }
+      ]
 
-  //     product = {
-  //       ...scrapedProduct,
-  //       priceHistory: updatedPriceHistory,
-  //       lowestPrice: getLowestPrice(updatedPriceHistory),
-  //       highestPrice: getHighestPrice(updatedPriceHistory),
-  //       averagePrice: getAveragePrice(updatedPriceHistory),
-  //     }
-  //   }
+      product = {
+        ...scrapedProduct,
+        priceHistory: updatedPriceHistory,
+        lowestPrice: getLowestPrice(updatedPriceHistory),
+        highestPrice: getHighestPrice(updatedPriceHistory),
+        averagePrice: getAveragePrice(updatedPriceHistory),
+      }
+    }
 
-  //   const newProduct = await Product.findOneAndUpdate(
-  //     { url: scrapedProduct.url },
-  //     product,
-  //     { upsert: true, new: true }
-  //   );
+    const newProduct = await Product.findOneAndUpdate(
+      { url: scrapedProduct.url },
+      product,
+      { upsert: true, new: true }
+    );
 
-  //   revalidatePath(`/products/${newProduct._id}`);
-  // } catch (error: any) {
-  //   throw new Error(`Failed to create/update product: ${error.message}`)
-  // }
+    revalidatePath(`/products/${newProduct._id}`);
+  } catch (error: any) {
+    throw new Error(`Failed to create/update product: ${error.message}`)
+  }
 }
 
 export async function getProductById(productId: string) {
@@ -56,7 +55,7 @@ export async function getProductById(productId: string) {
 
     const product = await Product.findOne({ _id: productId });
 
-    if (!product) return null;
+    if(!product) return null;
 
     return product;
   } catch (error) {
@@ -64,18 +63,17 @@ export async function getProductById(productId: string) {
   }
 }
 
-// export async function getAllProducts() {
-//   try {
-//     connectToDB();
+export async function getAllProducts() {
+  try {
+    connectToDB();
 
-//     // const products = await Product.find();
-//     const products = [];
+    const products = await Product.find();
 
-//     return products;
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
+    return products;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export async function getSimilarProducts(productId: string) {
   try {
@@ -83,7 +81,7 @@ export async function getSimilarProducts(productId: string) {
 
     const currentProduct = await Product.findById(productId);
 
-    if (!currentProduct) return null;
+    if(!currentProduct) return null;
 
     const similarProducts = await Product.find({
       _id: { $ne: productId },
@@ -95,20 +93,15 @@ export async function getSimilarProducts(productId: string) {
   }
 }
 
-export async function addUserEmailToProduct(
-  productId: string,
-  userEmail: string
-) {
+export async function addUserEmailToProduct(productId: string, userEmail: string) {
   try {
     const product = await Product.findById(productId);
 
-    if (!product) return;
+    if(!product) return;
 
-    const userExists = product.users.some(
-      (user: User) => user.email === userEmail
-    );
+    const userExists = product.users.some((user: User) => user.email === userEmail);
 
-    if (!userExists) {
+    if(!userExists) {
       product.users.push({ email: userEmail });
 
       await product.save();
